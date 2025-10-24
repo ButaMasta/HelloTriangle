@@ -14,6 +14,8 @@ const uint32_t HEIGHT = 600;
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"};
+const std::vector<const char*> deviceExtensions = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
@@ -330,12 +332,11 @@ class HelloTriangleApplication {
 
         QueueFamilyIndices indices = findQueueFamilies(device);
 
-        const std::vector<const char*> deviceExtensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        bool extensionsSupported = checkDeviceExtensionsSupport(device);
 
         return deviceProperties.deviceType ==
                    VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
-               indices.isComplete();
+               indices.isComplete() && extensionsSupported;
     }
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
@@ -369,7 +370,21 @@ class HelloTriangleApplication {
         return indices;
     }
 
-    bool checkDeviceExtensionsSupport(VkPhysicalDevice device) { return true; }
+    bool checkDeviceExtensionsSupport(VkPhysicalDevice device) {
+        uint32_t extensionCount;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
+                                             nullptr);
+        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount,
+                                             availableExtensions.data());
+
+        std::set<std::string> requiredExtensions(deviceExtensions.begin(),
+                                                 deviceExtensions.end());
+        for (const auto& extension : availableExtensions) {
+            requiredExtensions.erase(extension.extensionName);
+        }
+        return requiredExtensions.empty();
+    }
 };
 
 int main() {
