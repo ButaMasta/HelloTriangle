@@ -1,1 +1,5 @@
 HelloTriangle
+shaders/frag.spv
+.gitignore
+shaders/vert.spv
+.vscode/settings.json
