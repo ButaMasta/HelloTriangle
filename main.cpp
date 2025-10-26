@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -131,9 +132,28 @@ class HelloTriangleApplication {
         std::cout << "Selected \"" << deviceProperties.deviceName
                   << "\" as suitable device" << std::endl;
 
+        auto lastTime = std::chrono::high_resolution_clock::now();
+        int frameCount = 0;
+
         while (!glfwWindowShouldClose(window)) {
             glfwPollEvents();
             drawFrame();
+
+            frameCount++;
+            auto currentTime = std::chrono::high_resolution_clock::now();
+            float elapsedTime =
+                std::chrono::duration<float, std::chrono::seconds::period>(
+                    currentTime - lastTime)
+                    .count();
+
+            if (elapsedTime >= 1.0f) {
+                double fps = (double)frameCount / elapsedTime;
+
+                std::cout << "FPS: " << fps << std::endl;
+
+                frameCount = 0;
+                lastTime = currentTime;
+            }
         }
 
         vkDeviceWaitIdle(device);
