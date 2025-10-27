@@ -30,7 +30,7 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-VkResult CreateDebugUtilsMessenderEXT(
+VkResult CreateDebugUtilsMessengerEXT(
     VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
     const VkAllocationCallbacks* pAllocator,
     VkDebugUtilsMessengerEXT* pDebugMessenger) {
@@ -253,7 +253,7 @@ class HelloTriangleApplication {
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
         populateDebugMessengerCreateInfo(createInfo);
 
-        if (CreateDebugUtilsMessenderEXT(instance, &createInfo, nullptr,
+        if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr,
                                          &debugMessenger) != VK_SUCCESS) {
             throw std::runtime_error("failed to set up debug messenger!");
         }
@@ -831,9 +831,7 @@ class HelloTriangleApplication {
                                 !swapChainSupport.presentModes.empty();
         }
 
-        return deviceProperties.deviceType ==
-                   VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
-               indices.isComplete() && extensionsSupported && swapChainAdequate;
+        return indices.isComplete() && extensionsSupported && swapChainAdequate;
     }
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
