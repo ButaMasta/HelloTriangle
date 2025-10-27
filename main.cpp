@@ -17,8 +17,8 @@
 
 const float TARGET_FPS = 60.0f;
 const auto TARGET_FRAME_TIME = 
-    std::chrono::duration<double, std::milli>(1000.0 / TARGET_FPS);
-const auto SLEEP_BUFFER = std::chrono::duration<double, std::milli>(1.0);
+    std::chrono::duration<double, std::nano>(1'000'000'000.0 / TARGET_FPS);
+const auto MIN_SLEEP_TIME = std::chrono::duration<double, std::nano>(1.0);
 
 
 const uint32_t WIDTH = 800;
@@ -166,19 +166,14 @@ class HelloTriangleApplication {
             }
 
             auto frameEndTime = std::chrono::high_resolution_clock::now();
-            auto frameDuration =
-                std::chrono::duration_cast<std::chrono::milliseconds>(
-                    frameEndTime - frameStartTime);
+            auto sleepTime =
+                TARGET_FRAME_TIME - (frameEndTime - frameStartTime);
 
-            if (frameDuration < TARGET_FRAME_TIME) {
-                auto sleepDuration = TARGET_FRAME_TIME - frameDuration;
-                if (sleepDuration > SLEEP_BUFFER) {
-                    sleepDuration -= SLEEP_BUFFER;
-                }
-                std::this_thread::sleep_for(sleepDuration);
-
-                while (std::chrono::high_resolution_clock::now() - 
-                    frameStartTime < TARGET_FRAME_TIME);
+            while (sleepTime > MIN_SLEEP_TIME) {
+                std::this_thread::sleep_for(MIN_SLEEP_TIME);
+                auto sleepEndTime = std::chrono::high_resolution_clock::now();
+                sleepTime =
+                    TARGET_FRAME_TIME - (sleepEndTime - frameStartTime);
             }
         }
 
