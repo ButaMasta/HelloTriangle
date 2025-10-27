@@ -13,6 +13,13 @@
 #include <set>
 #include <stdexcept>
 #include <vector>
+#include <thread>
+
+const float TARGET_FPS = 60.0f;
+const auto TARGET_FRAME_TIME = 
+    std::chrono::duration<double, std::milli>(1000.0 / TARGET_FPS);
+const auto SLEEP_BUFFER = std::chrono::duration<double, std::milli>(1.0);
+
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -31,7 +38,7 @@ const bool enableValidationLayers = true;
 #endif
 
 VkResult CreateDebugUtilsMessengerEXT(
-    VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+    VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
     const VkAllocationCallbacks* pAllocator,
     VkDebugUtilsMessengerEXT* pDebugMessenger) {
     auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
@@ -136,6 +143,9 @@ class HelloTriangleApplication {
         int frameCount = 0;
 
         while (!glfwWindowShouldClose(window)) {
+
+            auto frameStartTime = std::chrono::high_resolution_clock::now();
+
             glfwPollEvents();
             drawFrame();
 
@@ -153,6 +163,22 @@ class HelloTriangleApplication {
 
                 frameCount = 0;
                 lastTime = currentTime;
+            }
+
+            auto frameEndTime = std::chrono::high_resolution_clock::now();
+            auto frameDuration =
+                std::chrono::duration_cast<std::chrono::milliseconds>(
+                    frameEndTime - frameStartTime);
+
+            if (frameDuration < TARGET_FRAME_TIME) {
+                auto sleepDuration = TARGET_FRAME_TIME - frameDuration;
+                if (sleepDuration > SLEEP_BUFFER) {
+                    sleepDuration -= SLEEP_BUFFER;
+                }
+                std::this_thread::sleep_for(sleepDuration);
+
+                while (std::chrono::high_resolution_clock::now() - 
+                    frameStartTime < TARGET_FRAME_TIME);
             }
         }
 
